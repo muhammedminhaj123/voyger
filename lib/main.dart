@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:medicalapp/bookingpage.dart';
+
 import 'package:medicalapp/bottamnavigationpage.dart';
+import 'package:medicalapp/bottamnavigationproviderpage.dart';
 import 'package:medicalapp/forgetpasswordpage.dart';
 import 'package:medicalapp/homepage.dart';
 import 'package:medicalapp/loginpage.dart';
 import 'package:medicalapp/mybookings.dart';
 import 'package:medicalapp/newpasswordpage.dart';
-import 'package:medicalapp/packagedetailspage.dart';
 
 import 'package:medicalapp/signuppage.dart';
 import 'package:medicalapp/splashscreen.dart';
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
       ),
       debugShowCheckedModeBanner: false,
-      home: Bottamapppage(),
+      home: BottomNavPagepovider(),
     );
   }
 }

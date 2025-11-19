@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:medicalapp/homepage.dart';
 import 'package:medicalapp/mybookings.dart';
+import 'package:medicalapp/userprofiledashbord.dart';
 import 'package:medicalapp/wishlistpage.dart';
 
-// Global shared lists for wishlist & bookings
 List<Map<String, String>> wishlist = [];
 List<Map<String, String>> bookings = [];
 
@@ -21,8 +21,13 @@ class _BottamapppageState extends State<Bottamapppage> {
   Widget build(BuildContext context) {
     final pages = [
       HomePage(onWishlistChanged: () => setState(() {})),
-      WishlistPage(wishlist: wishlist),
-      MyBookingsPage(),
+      WishlistPage(wishlist: []),
+      MyBookingsPage(bookings: bookings),
+      UserProfileScreen(
+        name: 'minhaj',
+        role: 'traveler',
+        avatarUrl: 'assets/Google__G__logo.svg-removebg-preview.png',
+      ),
     ];
 
     return Scaffold(
@@ -43,6 +48,7 @@ class _BottamapppageState extends State<Bottamapppage> {
             icon: Icon(Icons.book_online),
             label: "Bookings",
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),
     );

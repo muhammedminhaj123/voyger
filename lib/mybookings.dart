@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 List<Map<String, String>> bookedItems = [];
 
 class MyBookingsPage extends StatelessWidget {
-  const MyBookingsPage({super.key});
+  const MyBookingsPage({
+    super.key,
+    required List<Map<String, String>> bookings,
+  });
 
   @override
   Widget build(BuildContext context) {

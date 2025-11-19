@@ -62,7 +62,7 @@ class _LoginpageState extends State<Loginpage> {
                         if (value == null || value.isEmpty) {
                           return "Email is required";
                         }
-                        // Basic email validation regex
+
                         if (!RegExp(
                           r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
                         ).hasMatch(value)) {

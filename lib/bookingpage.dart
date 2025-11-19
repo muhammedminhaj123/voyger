@@ -1,166 +1,264 @@
 import 'package:flutter/material.dart';
-import 'travelerdetailspage.dart';
+import 'package:medicalapp/travelerdetailspage.dart';
 
-class BookingDetailsPage extends StatefulWidget {
+class BookingDatesPage extends StatefulWidget {
   final Map<String, String> package;
-
-  const BookingDetailsPage({
-    super.key,
-    required this.package,
-    required String title,
-    required String image,
-    required String price,
-    required String days,
-    required String category,
-  });
+  BookingDatesPage({required this.package});
 
   @override
-  State<BookingDetailsPage> createState() => _BookingDetailsPageState();
+  State<BookingDatesPage> createState() => _BookingDatesPageState();
 }
 
-class _BookingDetailsPageState extends State<BookingDetailsPage> {
-  bool addGuide = false;
+class _BookingDatesPageState extends State<BookingDatesPage> {
+  DateTime _selectedStart = DateTime.now().add(Duration(days: 3));
+  DateTime _selectedEnd = DateTime.now().add(Duration(days: 8));
+  int _adults = 2;
+  int _children = 1;
+
+  // Calculate the base price per adult from package string (e.g. "$1450" -> 1450.0), default 1450
+  double get basePrice {
+    final priceString = widget.package['price'] ?? '1450';
+    // Remove any non-numeric (keep decimal)
+    return double.tryParse(priceString.replaceAll(RegExp(r'[^d.]'), '')) ??
+        1450;
+  }
+
+  double get totalPrice =>
+      (_adults * basePrice) +
+      (_children * basePrice * 0.6); // children = 60% price
 
   @override
   Widget build(BuildContext context) {
-    final pkg = widget.package;
+    final imgUrl = widget.package['image'] ?? '';
+    final title = widget.package['title'] ?? '';
+    final category = widget.package['category'] ?? '';
+    final days = widget.package['days'] ?? '';
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(pkg['title']!),
-        backgroundColor: Colors.blueAccent,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Image banner
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
+      appBar: AppBar(title: Text("Book Your Trip")),
+      body: ListView(
+        padding: EdgeInsets.all(18),
+        children: [
+          // Progress indicator
+          Row(
+            children: [
+              Text(
+                "Step 1",
+                style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              child: Image.network(
-                pkg['image']!,
-                height: 250,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+              Text(" of 3", style: TextStyle(color: Colors.grey)),
+            ],
+          ),
+          SizedBox(height: 8),
+          LinearProgressIndicator(value: 1 / 3),
+          SizedBox(height: 14),
+
+          // Package Card with image and details
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
             ),
-
-            const SizedBox(height: 24),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    pkg['title']!,
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    pkg['category'] ?? '',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today,
-                        size: 18,
-                        color: Colors.blueAccent,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(pkg['days']!, style: const TextStyle(fontSize: 16)),
-                      const Spacer(),
-                      Text(
-                        pkg['price']!,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blueAccent,
+            padding: EdgeInsets.all(10),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: imgUrl.isEmpty
+                      ? SizedBox(width: 70, height: 55) // blank space
+                      : Image.network(
+                          imgUrl,
+                          width: 70,
+                          height: 55,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              SizedBox(width: 70, height: 55),
                         ),
+                ),
+                SizedBox(width: 9),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
+                      if (category.isNotEmpty)
+                        Text(
+                          category,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      if (days.isNotEmpty)
+                        Text(
+                          days,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[700],
+                          ),
+                        ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 22),
 
-                  const Text(
-                    "What’s included",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
+          // Select dates
+          Text(
+            "Select Travel Dates",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 9),
+          InkWell(
+            onTap: () async {
+              DateTimeRange? picked = await showDateRangePicker(
+                context: context,
+                initialDateRange: DateTimeRange(
+                  start: _selectedStart,
+                  end: _selectedEnd,
+                ),
+                firstDate: DateTime.now(),
+                lastDate: DateTime.now().add(Duration(days: 365)),
+              );
+              if (picked != null) {
+                setState(() {
+                  _selectedStart = picked.start;
+                  _selectedEnd = picked.end;
+                });
+              }
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 14, horizontal: 11),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blueAccent),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
                   Text(
-                    "• Flights & Transfers\n• 4-Star Accommodation\n• Daily Breakfast\n• Guided City Tour\n• Free Cancellation",
-                    style: TextStyle(fontSize: 15, color: Colors.grey[800]),
+                    "${_selectedStart.day}/${_selectedStart.month}/${_selectedStart.year} - "
+                    "${_selectedEnd.day}/${_selectedEnd.month}/${_selectedEnd.year}",
+                    style: TextStyle(fontWeight: FontWeight.w500),
                   ),
-
-                  const SizedBox(height: 24),
-
-                  SwitchListTile(
-                    title: const Text("Add Tour Guide"),
-                    subtitle: const Text(
-                      "Optional: a local expert for your trip",
-                    ),
-                    value: addGuide,
-                    onChanged: (value) {
-                      setState(() {
-                        addGuide = value;
-                      });
-                    },
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => TravelerDetailsPage(
-                              packageName: pkg['title']!,
-                              price: pkg['price']!,
-                              title: pkg['title']!,
-                              image: pkg['image']!,
-                              days: pkg['days']!,
-                              travelers: 1,
-                              date: DateTime.now(),
-                              category: '',
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        "Book Now",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
+                  Icon(Icons.calendar_today, color: Colors.blueAccent),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          SizedBox(height: 16),
+
+          // Travelers
+          Text(
+            "Number of Travelers",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Adults", style: TextStyle(fontWeight: FontWeight.w500)),
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.remove_circle_outline),
+                    onPressed: () {
+                      if (_adults > 1) setState(() => _adults--);
+                    },
+                  ),
+                  Text(_adults.toString(), style: TextStyle(fontSize: 16)),
+                  IconButton(
+                    icon: Icon(Icons.add_circle_outline),
+                    onPressed: () => setState(() => _adults++),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Children", style: TextStyle(fontWeight: FontWeight.w500)),
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.remove_circle_outline),
+                    onPressed: () {
+                      if (_children > 0) setState(() => _children--);
+                    },
+                  ),
+                  Text(_children.toString(), style: TextStyle(fontSize: 16)),
+                  IconButton(
+                    icon: Icon(Icons.add_circle_outline),
+                    onPressed: () => setState(() => _children++),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+
+          // Dynamic estimated price
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Estimated Price",
+                style: TextStyle(color: Colors.grey[700]),
+              ),
+              Text(
+                "₹${totalPrice.toStringAsFixed(2)}",
+                style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                padding: EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TravelerDetailsPage(
+                      package: widget.package,
+                      dateRange: DateTimeRange(
+                        start: _selectedStart,
+                        end: _selectedEnd,
+                      ),
+                      adults: _adults,
+                      children: _children,
+                      estimatedPrice: totalPrice,
+                    ),
+                  ),
+                );
+              },
+              child: Text(
+                "Continue",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

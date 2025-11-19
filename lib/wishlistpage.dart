@@ -1,76 +1,86 @@
 import 'package:flutter/material.dart';
-import 'package:medicalapp/packagedetailspage.dart';
-import 'homepage.dart';
 
-class WishlistPage extends StatelessWidget {
+class WishlistPage extends StatefulWidget {
   final List<Map<String, String>> wishlist;
   const WishlistPage({super.key, required this.wishlist});
 
   @override
+  State<WishlistPage> createState() => _WishlistPageState();
+}
+
+class _WishlistPageState extends State<WishlistPage> {
+  late List<Map<String, String>> wishlist;
+
+  @override
+  void initState() {
+    super.initState();
+    wishlist = List.from(widget.wishlist);
+  }
+
+  void removeFromWishlist(Map<String, String> pkg) {
+    setState(() {
+      wishlist.removeWhere((item) => item["title"] == pkg["title"]);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("My Wishlist")),
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        title: const Text("Wishlist"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        centerTitle: true,
+        elevation: 0.5,
+      ),
       body: wishlist.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
-                "No items in wishlist",
-                style: TextStyle(fontSize: 16),
+                "Your wishlist is empty.Click the heart on packages to add them!",
+
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18, color: Colors.grey[600]),
               ),
             )
           : ListView.builder(
+              padding: const EdgeInsets.all(20),
               itemCount: wishlist.length,
               itemBuilder: (context, index) {
-                final package = wishlist[index];
+                final pkg = wishlist[index];
                 return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  elevation: 3,
                   child: ListTile(
-                    contentPadding: const EdgeInsets.all(8),
                     leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                       child: Image.network(
-                        package["image"]!,
-                        width: 70,
-                        height: 70,
+                        pkg['image'] ?? '',
+                        width: 60,
+                        height: 60,
                         fit: BoxFit.cover,
                       ),
                     ),
                     title: Text(
-                      package["title"]!,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      pkg['title'] ?? '',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                     subtitle: Text(
-                      package["price"]!,
-                      style: const TextStyle(color: Colors.blueAccent),
+                      pkg['days'] ?? '',
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                     ),
-                    trailing: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PackageDetailPage(
-                              image: package["image"]!,
-                              title: package["title"]!,
-                              price: package["price"]!,
-                              days: package["days"]!,
-                              category: package["category"]!,
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Text("Book Now"),
+                    trailing: IconButton(
+                      icon: Icon(Icons.favorite, color: Colors.redAccent),
+                      onPressed: () => removeFromWishlist(pkg),
+                      tooltip: 'Remove from wishlist',
                     ),
+                    onTap: () {},
                   ),
                 );
               },
